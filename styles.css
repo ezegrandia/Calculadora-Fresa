@@ -1,0 +1,87 @@
+body { font-family: "Inter", sans-serif; background-color: #f1f5f9; color: #0f172a; }
+.mono { font-family: "JetBrains Mono", monospace; }
+input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; }
+.iso-P { background-color: #2563eb; color: white; }
+.iso-M { background-color: #eab308; color: #0f172a; }
+.iso-K { background-color: #dc2626; color: white; }
+.iso-N { background-color: #16a34a; color: white; }
+.iso-S { background-color: #ea580c; color: white; }
+.iso-H { background-color: #64748b; color: white; }
+.op-card { border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.75rem; margin-bottom: 0.75rem; background-color: #f8fafc; transition: all 0.2s; }
+.op-card:hover { border-color: #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; line-height: 1.05; font-size: 0.92em; }
+.frac .num { border-bottom: 1.2px solid currentColor; padding: 0 4px 1px 4px; text-align: center; }
+.frac .den { padding: 1px 4px 0 4px; text-align: center; }
+.formula-box { background: #f1f5f9; border-left: 3px solid #0284c7; padding: 6px 8px; border-radius: 4px; font-family: "JetBrains Mono", monospace; font-size: 11px; color: #0f172a; margin: 4px 0; }
+.formula-box.red { border-left-color: #dc2626; background: #fef2f2; }
+.formula-box.purple { border-left-color: #a855f7; background: #faf5ff; }
+@media print {
+    @page { size: A4 landscape; margin: 10mm; }
+    body { background-color: #ffffff !important; font-size: 11px !important; }
+    .no-print { display: none !important; }
+    .print-full { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; border: none !important; }
+    .avoid-break { break-inside: avoid; page-break-inside: avoid; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
+/* ========== FÓRMULAS DETALLADAS EN REPORTE ========== */
+.formula-box {
+    padding: 10px 12px;
+    line-height: 1.65;
+}
+.formula-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+    padding: 5px 0;
+    border-bottom: 1px dashed rgba(148, 163, 184, 0.25);
+}
+.formula-line:last-child { border-bottom: none; }
+.formula-line .lbl {
+    font-weight: 800;
+    color: #0f172a;
+    min-width: 32px;
+    display: inline-block;
+}
+.formula-line .result { color: #0369a1; font-weight: 800; }
+.formula-line .subst { color: #475569; }
+
+.formula-multi { display: flex; flex-direction: column; align-items: flex-start; }
+.formula-multi > div { padding-left: 0; }
+.formula-multi > div.subst { padding-left: 1.5em; color: #475569; }
+.formula-multi > div.result { padding-left: 1.5em; color: #0369a1; }
+
+.formula-box .frac { font-size: 1.05em; margin: 0 4px; }
+
+.formula-section-title {
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    padding: 6px 0 4px 0;
+    border-bottom: 2px solid #0f172a;
+    margin-bottom: 6px;
+    margin-top: 4px;
+}
+.formula-section-title.red { border-color: #dc2626; color: #991b1b; }
+.formula-section-title.purple { border-color: #a855f7; color: #6b21a8; }
+.formula-section-title.teal { border-color: #14b8a6; color: #115e59; }
+.formula-section-title.blue { border-color: #2563eb; color: #1e40af; }
+
+.mecha-block {
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-top: 6px;
+    background: #f8fafc;
+}
+.mecha-block.previa { border-left: 3px solid #f59e0b; background: #fffbeb; }
+.mecha-block.final { border-left: 3px solid #059669; background: #ecfdf5; }
+.mecha-header {
+    font-weight: 800;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+}

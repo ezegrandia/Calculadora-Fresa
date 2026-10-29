@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculadora_Fresado v17.5 — Con Guía</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body class="min-h-screen pb-12">
+    <!-- HEADER -->
+    <header class="no-print sticky top-0 z-40 bg-slate-900 text-white border-b border-slate-700 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="bg-amber-500 text-slate-950 font-black px-2.5 py-1.5 rounded text-sm tracking-tighter">
+                    FRESADO v17.5</div>
+                <div>
+                    <h1 class="font-extrabold text-sm sm:text-base tracking-tight">Calculadora_Fresado</h1>
+                </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <!-- BOTON DE AYUDA -->
+                <button onclick="toggleAyuda()"
+                    class="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow transition flex items-center gap-1">
+                    <span>❓</span> Guía de Uso
+                </button>
+                <button onclick="resetearTodo()"
+                    class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 hover:bg-slate-600 text-white border border-slate-500 transition">🔄
+                    Reset</button>
+                <button onclick="limpiarOperaciones()"
+                    class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-700 hover:bg-rose-600 text-white border border-rose-500 transition">🗑️
+                    Solo Caja</button>
+                <button onclick="cargarPresetEjercicioGuia()"
+                    class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 border border-slate-600 transition">📌
+                    Cargar Guía</button>
+                <button onclick="cargarPresetEjercicio4()"
+                    class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-700 hover:bg-amber-600 border border-amber-500 text-white transition">📐
+                    Ejercicio 4</button>
+                <button onclick="window.print()"
+                    class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow transition">🖨️
+                    PDF</button>
+                <button onclick="ejecutarCalculoCompleto()"
+                    class="px-3.5 py-1.5 rounded-lg text-xs font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white shadow transition ring-2 ring-emerald-400/50">🧮
+                    Calcular</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN (Igual que en tu versión original que funciona) -->
+    <main class="max-w-7xl mx-auto px-4 pt-5 grid grid-cols-1 lg:grid-cols-12 gap-6 print:block">
+        <section class="no-print lg:col-span-4 space-y-5">
+            <!-- MATERIAL Y MÁQUINA -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                <div class="flex items-center gap-2 border-b border-slate-200 pb-2.5 mb-3">
+                    <span class="bg-slate-900 text-white text-xs font-bold px-2 py-0.5 rounded">1</span>
+                    <h2 class="font-bold text-sm text-slate-900 uppercase">Material y Máquina</h2>
+                </div>
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Material Base (Escribí ej: 4140,
+                            304):</label>
+                        <input type="text" id="matInput" list="matDatalist" autocomplete="off" value="01.2"
+                            oninput="alCambiarMaterial()" onchange="alCambiarMaterial()"
+                            placeholder="Ej: 4140, 304L, Inconel..."
+                            class="w-full p-2 rounded-lg border border-slate-300 bg-slate-50 font-medium text-slate-900 mb-2">
+                        <label class="block font-bold text-slate-700 mb-1 text-[10px]">Forzar CMC Sandvik (Edición
+                            Manual):</label>
+                        <select id="cmcSelect" onchange="alCambiarCMCManual()"
+                            class="w-full p-1.5 rounded-lg border border-slate-300 bg-white text-xs font-semibold"></select>
+                        <datalist id="matDatalist">
+                            <option value="1020">1020 · Acero al carbono (CMC 01.1)</option>
+                            <option value="1045">1045 · Acero al carbono (CMC 01.2)</option>
+                            <option value="4140">4140 · Acero cromo-molibdeno (CMC 02.1)</option>
+                            <option value="304">304 · Inox austenítico (CMC 05.21)</option>
+                            <option value="6061">6061 · Aluminio forjado (CMC 30.11)</option>
+                        </datalist>
+                    </div>
+                    <div id="boxCustomMat" class="hidden p-2 rounded-lg bg-sky-50 border border-sky-200 space-y-1.5">
+                        <div class="text-[10px] font-extrabold uppercase text-sky-900">Material personalizado</div>
+                        <input type="text" id="customNombre" placeholder="Nombre"
+                            class="w-full p-1.5 rounded border border-sky-300 text-xs" />
+                        <div class="grid grid-cols-3 gap-1">
+                            <div><label class="block text-[10px] font-bold text-sky-900 mb-0.5">kc</label><input
+                                    type="number" id="customKc" value="1800"
+                                    class="w-full p-1 rounded border border-sky-300 mono text-xs" /></div>
+                            <div><label class="block text-[10px] font-bold text-sky-900 mb-0.5">mc</label><input
+                                    type="number" id="customMc" value="0.25" step="0.01"
+                                    class="w-full p-1 rounded border border-sky-300 mono text-xs" /></div>
+                            <div><label class="block text-[10px] font-bold text-sky-900 mb-0.5">Vc</label><input
+                                    type="number" id="customVc" value="250"
+                                    class="w-full p-1 rounded border border-sky-300 mono text-xs" /></div>
+                        </div>
+                    </div>
+                    <div class="p-2 rounded-lg bg-amber-50 border border-amber-200">
+                        <label class="flex items-center gap-2 cursor-pointer font-bold text-amber-950">
+                            <input type="checkbox" id="chkTemple" onchange="toggleTempleUI()"
+                                class="rounded text-amber-600" />
+                            <span>¿Recibe Temple entre Desbaste y Terminación?</span>
+                        </label>
+                        <div id="boxTemple" class="hidden mt-2 pt-2 border-t border-amber-200 space-y-1.5">
+                            <select id="matTempleSelect"
+                                class="w-full p-1.5 rounded border border-amber-300 bg-white text-slate-900 text-xs">
+                                <option value="02.2" selected>02.2 · Baja aleación templado</option>
+                                <option value="04.1">04.1 · Acero templado 45–55 HRC</option>
+                                <option value="04.2">04.2 · Acero templado 55–63 HRC</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200">
+                        <div><label class="block font-bold text-slate-700 mb-1">Potencia CNC (kW):</label><input
+                                type="number" id="potInput" value="10" step="0.5"
+                                class="w-full p-2 rounded-lg border border-slate-300 font-mono font-bold" /></div>
+                        <div><label class="flex items-center gap-2 cursor-pointer font-bold text-slate-800 mt-6"><input
+                                    type="checkbox" id="chkEta" checked onchange="toggleEtaUI()"
+                                    class="rounded text-blue-600" /><span>Rendimiento (η)</span></label></div>
+                    </div>
+                    <div id="boxEta" class="flex justify-between items-center mt-1">
+                        <span class="text-slate-600 font-semibold text-[11px]">Valor η:</span>
+                        <input type="number" id="etaInput" value="0.90" step="0.05"
+                            class="w-20 p-1.5 rounded border border-slate-300 font-mono font-bold text-center" />
+                    </div>
+                    <div
+                        class="p-2 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between mt-2">
+                        <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-800"><input
+                                type="checkbox" id="chkMaxRpm" onchange="toggleRpmUI()"
+                                class="rounded text-blue-600" /><span>Limitar RPM Husillo</span></label>
+                        <input type="number" id="maxRpmInput" value="4000" disabled
+                            class="w-20 p-1.5 rounded border border-slate-300 font-mono font-bold text-center opacity-50" />
+                    </div>
+                    <div id="matInfoBox"
+                        class="p-2 rounded-lg bg-slate-100 border border-slate-200 text-[10px] mono text-slate-700">
+                    </div>
+                </div>
+            </div>
+
+            <!-- TOCHO Y PRISMA -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-2.5">
+                    <div class="flex items-center gap-2"><span
+                            class="bg-slate-900 text-white text-xs font-bold px-2 py-0.5 rounded">2</span>
+                        <h2 class="font-bold text-sm text-slate-900 uppercase">Tocho y Prisma Terminado</h2>
+                    </div>
+                </div>
+                <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+                    <div class="flex items-center justify-between"><span
+                            class="text-[11px] font-extrabold uppercase text-slate-600">Tocho (Bruto)</span></div>
+                    <div class="grid grid-cols-3 gap-2 text-xs">
+                        <div><label class="block font-bold text-slate-700 mb-1">Largo Bruto:</label><input type="number"
+                                id="largoInput" value="105" step="0.5"
+                                class="w-full p-1.5 rounded border border-slate-300 font-mono font-bold bg-white"
+                                oninput="alCambiarDimensiones()" /></div>
+                        <div><label class="block font-bold text-slate-700 mb-1">Ancho Bruto:</label><input type="number"
+                                id="anchoInput" value="75" step="0.5"
+                                class="w-full p-1.5 rounded border border-slate-300 font-mono font-bold bg-white"
+                                oninput="alCambiarDimensiones()" /></div>
+                        <div><label class="block font-bold text-slate-700 mb-1">Alto Bruto:</label><input type="number"
+                                id="altoInput" value="55" step="0.5"
+                                class="w-full p-1.5 rounded border border-slate-300 font-mono font-bold bg-white"
+                                oninput="alCambiarDimensiones()" /></div>
+                    </div>
+                </div>
+                <div class="p-2.5 rounded-lg bg-blue-50/60 border border-blue-200 space-y-2">
+                    <div class="flex items-center justify-between"><span
+                            class="text-[11px] font-extrabold uppercase text-blue-950">Prisma Terminado</span><button
+                            onclick="igualarPrismaATocho()"
+                            class="text-[10px] font-bold text-blue-700 hover:underline">Igualar al Tocho</button></div>
+                    <div class="grid grid-cols-3 gap-2 text-xs">
+                        <div><label class="block font-bold text-blue-900 mb-1">Largo Final:</label><input type="number"
+                                id="largoFinalInput" value="100" step="0.5"
+                                class="w-full p-1.5 rounded border border-blue-300 font-mono font-bold bg-white text-blue-950"
+                                oninput="alCambiarDimensiones()" /></div>
+                        <div><label class="block font-bold text-blue-900 mb-1">Ancho Final:</label><input type="number"
+                                id="anchoFinalInput" value="70" step="0.5"
+                                class="w-full p-1.5 rounded border border-blue-300 font-mono font-bold bg-white text-blue-950"
+                                oninput="alCambiarDimensiones()" /></div>
+                        <div><label class="block font-bold text-blue-900 mb-1">Alto Final:</label><input type="number"
+                                id="altoFinalInput" value="50" step="0.5"
+                                class="w-full p-1.5 rounded border border-blue-300 font-mono font-bold bg-white text-blue-950"
+                                oninput="alCambiarDimensiones()" /></div>
+                    </div>
+                    <div id="infoSobreespesor"
+                        class="text-[11px] font-mono text-blue-800 pt-1 border-t border-blue-200/80"></div>
+                </div>
+            </div>
+
+            <!-- OPERACIONES -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                <div class="flex items-center gap-2 border-b border-slate-200 pb-2.5 mb-3"><span
+                        class="bg-slate-900 text-white text-xs font-bold px-2 py-0.5 rounded">3</span>
+                    <h2 class="font-bold text-sm text-slate-900 uppercase">Operaciones</h2>
+                </div>
+                <div class="space-y-4 text-xs">
+                    <!-- PLANEADO -->
+                    <div>
+                        <div class="font-bold text-slate-800 flex items-center justify-between mb-2"><span
+                                class="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded text-[10px] uppercase">Planeado
+                                de Caras</span></div>
+                        <div class="p-2 bg-slate-50 rounded border border-slate-200 space-y-2">
+                            <div class="p-2 rounded bg-red-50/60 border border-red-200 space-y-1.5">
+                                <div class="font-bold text-[10px] text-red-950">🔧 Herramienta Desbaste</div>
+                                <div class="grid grid-cols-2 gap-1">
+                                    <div><label class="text-[9px] block font-semibold">Dc (mm)</label><input
+                                            type="number" id="plDcDesbaste" value="80"
+                                            class="w-full p-0.5 rounded border border-red-300 text-[10px] mono bg-white">
+                                    </div>
+                                    <div><label class="text-[9px] block font-semibold">zn (filos)</label><input
+                                            type="number" id="plZnDesbaste" value="6" step="1"
+                                            class="w-full p-0.5 rounded border border-red-300 text-[10px] mono bg-white">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-1">
+                                    <div><label class="text-[9px] block font-semibold">Cód. herramienta</label><input
+                                            type="text" id="plCodigoHerramientaDesbaste" placeholder="Ej: R290"
+                                            class="w-full p-0.5 rounded border border-red-300 text-[10px] mono bg-white">
+                                    </div>
+                                    <div id="plCodInsertoDesbasteBox"><label class="text-[9px] block font-semibold">Cód.
+                                            inserto</label><input type="text" id="plCodigoInsertoDesbaste"
+                                            placeholder="Ej: R290-12T308M-PM"
+                                            class="w-full p-0.5 rounded border border-red-300 text-[10px] mono bg-white">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-1">
+                                    <div><label class="text-[9px] block font-semibold">Calidad</label><input type="text"
+                                            id="plCalidadDesbaste" placeholder="Ej: GC 2040"
+                                            class="w-full p-0.5 rounded border border-red-300 text-[10px] mono bg-white">
+                                    </div>
+                                    <div><label class="text-[9px] block font-semibold">Vc (m/min)</label><input
+                                            type="number" id="plVcDesbaste" placeholder="auto"
+                                            class="w-full p-0.5 rounded border border-red-300 text-[10px] mono bg-white">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-2 rounded bg-purple-50/60 border border-purple-200 space-y-1.5">
+                                <div class="font-bold text-[10px] text-purple-950">✨ Herramienta Terminación</div>
+                                <div class="grid grid-cols-2 gap-1">
+                                    <div><label class="text-[9px] block font-semibold">Dc (mm)</label><input
+                                            type="number" id="plDcTerminacion" value="80"
+                                            class="w-full p-0.5 rounded border border-purple-300 text-[10px] mono bg-white">
+                                    </div>
+                                    <div><label class="text-[9px] block font-semibold">zn (filos)</label><input
+                                            type="number" id="plZnTerminacion" value="6" step="1"
+                                            class="w-full p-0.5 rounded border border-purple-300 text-[10px] mono bg-white">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-1">
+                                    <div><label class="text-[9px] block font-semibold">Cód. herramienta</label><input
+                                            type="text" id="plCodigoHerramientaTerminacion" placeholder="Ej: R290"
+                                            class="w-full p-0.5 rounded border border-purple-300 text-[10px] mono bg-white">
+                                    </div>
+                                    <div id="plCodInsertoTerminacionBox"><label
+                                            class="text-[9px] block font-semibold">Cód. inserto</label><input
+                                            type="text" id="plCodigoInsertoTerminacion"
+                                            placeholder="Ej: R290-12T308M-PM"
+                                            class="w-full p-0.5 rounded border border-purple-300 text-[10px] mono bg-white">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-1">
+                                    <div><label class="text-[9px] block font-semibold">Calidad</label><input type="text"
+                                            id="plCalidadTerminacion" placeholder="Ej: GC 2040"
+                                            class="w-full p-0.5 rounded border border-purple-300 text-[10px] mono bg-white">
+                                    </div>
+                                    <div><label class="text-[9px] block font-semibold">Vc (m/min)</label><input
+                                            type="number" id="plVcTerminacion" placeholder="auto"
+                                            class="w-full p-0.5 rounded border border-purple-300 text-[10px] mono bg-white">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-1.5 mt-2">
+                                <label class="flex items-center gap-1 text-[10px]"><input type="checkbox" id="pl_sup"
+                                        checked class="rounded text-blue-600"> Sup.</label>
+                                <label class="flex items-center gap-1 text-[10px]"><input type="checkbox" id="pl_inf"
+                                        checked class="rounded text-blue-600"> Inf.</label>
+                                <label class="flex items-center gap-1 text-[10px]"><input type="checkbox"
+                                        id="pl_lat_izq" checked class="rounded text-blue-600"> Lat.Izq</label>
+                                <label class="flex items-center gap-1 text-[10px]"><input type="checkbox"
+                                        id="pl_lat_der" checked class="rounded text-blue-600"> Lat.Der</label>
+                                <label class="flex items-center gap-1 text-[10px]"><input type="checkbox" id="pl_frente"
+                                        checked class="rounded text-blue-600"> Frente</label>
+                                <label class="flex items-center gap-1 text-[10px]"><input type="checkbox" id="pl_atras"
+                                        checked class="rounded text-blue-600"> Atrás</label>
+                            </div>
+                            <div class="p-2 rounded bg-orange-50 border border-orange-200 space-y-1.5 mt-2">
+                                <div class="font-bold text-[10px] text-red-950">Parámetros Desbaste</div>
+                                <div class="grid grid-cols-2 gap-1">
+                                    <div><label class="text-[9px] block font-semibold">fz (mm/z)</label><input
+                                            type="number" id="plFzDesbaste" value="0.12" step="0.01"
+                                            class="w-full p-0.5 rounded border border-orange-300 text-[10px] mono bg-white">
+                                    </div>
+                                    <div><label class="text-[9px] block font-semibold">ap (mm)</label><input
+                                            type="number" id="plApDesbaste" value="2.5" step="0.1"
+                                            class="w-full p-0.5 rounded border border-orange-300 text-[10px] mono bg-white">
+                                    </div>
+                                </div>
+                                <div><label class="text-[9px] block font-semibold">Sobrematerial (mm)</label><input
+                                        type="number" id="plSobreMaterial" value="0.5" step="0.1"
+                                        class="w-full p-0.5 rounded border border-orange-300 text-[10px] mono bg-white">
+                                </div>
+                            </div>
+                            <div class="p-2 rounded bg-purple-50 border border-purple-200 space-y-1.5">
+                                <div class="flex items-center gap-1">
+                                    <input type="checkbox" id="plTerminacionActiva" checked
+                                        onchange="togglePlaneadoTerminacionUI()" class="rounded text-purple-600">
+                                    <label class="font-bold text-[10px] text-purple-950">Terminación activa</label>
+                                </div>
+                                <div id="boxPlTermParams" class="space-y-1.5">
+                                    <div class="grid grid-cols-3 gap-1">
+                                        <div><label class="text-[9px] block font-semibold">fz (mm/z)</label><input
+                                                type="number" id="plFzTerminacion" value="0.08" step="0.01"
+                                                class="w-full p-0.5 rounded border border-purple-300 text-[10px] mono bg-white">
+                                        </div>
+                                        <div><label class="text-[9px] block font-semibold">ap (mm)</label><input
+                                                type="number" id="plApTerminacion" value="0.5" step="0.1"
+                                                class="w-full p-0.5 rounded border border-purple-300 text-[10px] mono bg-white">
+                                        </div>
+                                        <div><label class="text-[9px] block font-semibold">Forzar ae</label><input
+                                                type="number" id="plAeTerminacionOverride" placeholder="auto"
+                                                class="w-full p-0.5 rounded border border-purple-300 text-[10px] mono bg-white">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-2"><span
+                                class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold">Escalones</span><button
+                                onclick="agregarEscalon()"
+                                class="text-[11px] bg-red-600 hover:bg-red-500 text-white font-bold px-2 py-1 rounded transition">+
+                                Agregar</button></div>
+                        <div id="listaEscalones" class="space-y-2"></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-2"><span
+                                class="bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold">Ranuras</span><button
+                                onclick="agregarRanura()"
+                                class="text-[11px] bg-amber-600 hover:bg-amber-500 text-white font-bold px-2 py-1 rounded transition">+
+                                Agregar</button></div>
+                        <div id="listaRanuras" class="space-y-2"></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-2"><span
+                                class="bg-teal-100 text-teal-800 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold">Perforados</span><button
+                                onclick="agregarPerforado()"
+                                class="text-[11px] bg-teal-600 hover:bg-teal-500 text-white font-bold px-2 py-1 rounded transition">+
+                                Agregar</button></div>
+                        <div id="listaPerforados" class="space-y-2"></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-2"><span
+                                class="bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold">Abocardados</span><button
+                                onclick="agregarAbocardado()"
+                                class="text-[11px] bg-purple-600 hover:bg-purple-500 text-white font-bold px-2 py-1 rounded transition">+
+                                Agregar</button></div>
+                        <div id="listaAbocardados" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="lg:col-span-8 space-y-5 print-full">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 avoid-break">
+                <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+                    <h3 class="font-bold text-xs uppercase tracking-wider text-slate-700">Plano Técnico</h3>
+                    <div class="flex items-center gap-3 text-[11px] font-semibold text-slate-600">
+                        <span class="flex items-center gap-1"><span
+                                class="w-3 h-3 inline-block border-2 border-dashed border-slate-400 rounded-sm"></span>
+                            Tocho</span>
+                        <span class="flex items-center gap-1"><span
+                                class="w-3 h-3 inline-block bg-slate-200 border border-slate-900 rounded-sm"></span>
+                            Prisma</span>
+                    </div>
+                </div>
+                <div id="alertaPlanoBanner" class="hidden mb-3"></div>
+                <div class="w-full bg-white rounded-lg p-2 border border-slate-300"><canvas id="piezaCanvas"
+                        class="w-full h-[540px] block"></canvas></div>
+            </div>
+            <div id="reporteAcademico"
+                class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-6 print-full"></div>
+        </section>
+    </main>
+
+    <!-- ==================================================== -->
+    <!-- PANEL DE AYUDA LATERAL (SIDEBAR) -->
+    <!-- ==================================================== -->
+    <div id="ayudaBackdrop" class="fixed inset-0 bg-black/40 z-50 hidden transition-opacity" onclick="toggleAyuda()">
+    </div>
+    <aside id="ayudaPanel"
+        class="fixed right-0 top-0 h-full w-full max-w-md bg-slate-50 shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex flex-col border-l border-slate-200">
+        <div class="p-4 bg-slate-900 text-white flex justify-between items-center sticky top-0 z-10">
+            <h2 class="font-bold text-lg flex items-center gap-2"><span>❓</span> Guía de Uso Rápida</h2>
+            <button onclick="toggleAyuda()"
+                class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+        </div>
+
+        <div class="p-5 overflow-y-auto space-y-4 text-sm text-slate-700">
+            <p class="mb-4">Bienvenido a la calculadora. Sigue estos pasos para cargar tu pieza sin errores.</p>
+
+            <details class="group bg-white border border-slate-200 rounded-lg shadow-sm open:ring-1 open:ring-blue-500">
+                <summary
+                    class="font-bold p-3 cursor-pointer bg-slate-100 rounded-t-lg group-open:bg-blue-50 list-none flex justify-between items-center text-slate-800">
+                    <span>1. Material y Máquina</span>
+                    <span class="text-blue-600 transition-transform group-open:rotate-180">▼</span>
+                </summary>
+                <div class="p-4 text-xs space-y-2 border-t border-slate-200">
+                    <p>Escribí el material (ej: <code class="bg-slate-100 px-1 rounded">4140</code>). La app buscará su
+                        equivalencia en <strong>CMC Sandvik</strong>. Si no aparece, seleccionalo a mano en el
+                        desplegable.</p>
+                    <p>Cargá la <strong>Potencia</strong> de tu máquina y su <strong>Rendimiento (η)</strong>. Si no
+                        sabes el rendimiento, usa 0.85.</p>
+                </div>
+            </details>
+
+            <details class="group bg-white border border-slate-200 rounded-lg shadow-sm open:ring-1 open:ring-blue-500">
+                <summary
+                    class="font-bold p-3 cursor-pointer bg-slate-100 rounded-t-lg group-open:bg-blue-50 list-none flex justify-between items-center text-slate-800">
+                    <span>2. Tocho y Prisma</span>
+                    <span class="text-blue-600 transition-transform group-open:rotate-180">▼</span>
+                </summary>
+                <div class="p-4 text-xs space-y-2 border-t border-slate-200">
+                    <p>Carga las medidas del material en bruto (Tocho) y las medidas finales que pide el plano. La app
+                        calcula el <strong>sobreespesor</strong> automáticamente.</p>
+                </div>
+            </details>
+
+            <details class="group bg-white border border-slate-200 rounded-lg shadow-sm open:ring-1 open:ring-blue-500"
+                open>
+                <summary
+                    class="font-bold p-3 cursor-pointer bg-blue-600 text-white rounded-t-lg list-none flex justify-between items-center">
+                    <span>3. ¿Qué es Vc, fz, ap y ae?</span>
+                    <span class="text-white transition-transform group-open:rotate-180">▼</span>
+                </summary>
+                <div class="p-4 text-xs space-y-3 border-t border-slate-200 bg-blue-50/30">
+                    <div class="bg-white p-2 rounded border border-blue-100">
+                        <strong class="text-blue-800">Vc (Velocidad de Corte):</strong> Es la velocidad a la que la
+                        fresa corta el material (m/min). <em>Sacalo de la tabla del catálogo para tu material (CMC) y la
+                            calidad de tu plaquita.</em>
+                    </div>
+                    <div class="bg-white p-2 rounded border border-blue-100">
+                        <strong class="text-blue-800">fz (Avance por diente):</strong> Cuánto avanza cada filo de la
+                        fresa. <em>Sacalo de la tabla de la plaquita/fresa en el catálogo.</em>
+                    </div>
+                    <div class="bg-white p-2 rounded border border-blue-100">
+                        <strong class="text-emerald-700">ap (Profundidad Axial):</strong> Es cuánto baja la fresa en el
+                        eje Z (vertical) en cada pasada. Si tenés 10mm de material para sacar y usás un <code
+                            class="bg-slate-100 px-1 rounded">ap=2</code>, la app hará 5 pasadas.
+                    </div>
+                    <div class="bg-white p-2 rounded border border-emerald-200">
+                        <strong class="text-emerald-700">ae (Empañe Radial):</strong> Es cuánto de ancho de la fresa
+                        muerde el material.
+                        <ul class="list-disc pl-4 mt-1 space-y-1 text-slate-600">
+                            <li><strong>Mucho (2/3 Dc):</strong> La fresa corta 2/3 de su diámetro. Es para
+                                <strong>Desbaste</strong> (sacar material rápido).</li>
+                            <li><strong>Poco (0.1 Dc):</strong> La fresa corta solo el 10%. Es para
+                                <strong>Terminación</strong> (dejar liso).</li>
+                        </ul>
+                        <div class="mt-2 p-2 bg-emerald-100 text-emerald-900 rounded">
+                            💡 <strong>TIP:</strong> Si tu cara mide 70mm y querés forzar solo 2 pasadas en terminación,
+                            usá el campo <strong>"Forzar ae"</strong> y poné <code
+                                class="bg-white px-1 rounded">35</code>.
+                        </div>
+                    </div>
+                </div>
+            </details>
+
+            <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-xs text-yellow-800">
+                <strong>⚠️ Recuerda:</strong> Si al presionar "Calcular" dice "❌ Excede la potencia", estás sacando
+                mucha viruta de golpe. <strong>Bajá el valor de `ap`</strong>. La app hará más pasadas y tardará más,
+                pero la máquina no se romperá.
+            </div>
+
+            <div class="text-center mt-6">
+                <button onclick="cargarPresetEjercicio4(); toggleAyuda();"
+                    class="px-4 py-2 bg-slate-800 text-white rounded-lg font-bold text-xs hover:bg-slate-700">Cargar
+                    Ejemplo (Ejercicio 4) y probar</button>
+            </div>
+        </div>
+    </aside>
+
+    <script src="js/db-materiales.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/geometria.js"></script>
+    <script src="js/operaciones.js"></script>
+    <script src="js/canvas.js"></script>
+    <script src="js/calculos.js"></script>
+    <script src="js/presets.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
