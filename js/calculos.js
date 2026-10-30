@@ -32,6 +32,31 @@ function invalidarCalculos() {
 }
 
 // ============================================================
+// ADAPTACIÓN DE RPM SEGÚN CAJA DE VELOCIDADES / LÍMITE HUSILLO
+// ============================================================
+function getListaCajaRpm() {
+    const chk = document.getElementById("chkCajaRpm");
+    const inp = document.getElementById("cajaRpmInput");
+    if (!chk || !chk.checked || !inp) return [];
+    return inp.value
+        .split(/[\s,;]+/)
+        .map((v) => parseFloat(v.trim()))
+        .filter((v) => !isNaN(v) && v > 0)
+        .sort((a, b) => a - b);
+}
+
+function obtenerRpmMaquina(n_teorica, usaMaxRpm, maxRpm) {
+    let n = usaMaxRpm && n_teorica > maxRpm ? maxRpm : n_teorica;
+    const escalonesRpm = getListaCajaRpm();
+    if (escalonesRpm.length > 0) {
+        const inferiores = escalonesRpm.filter((r) => r <= n);
+        // Adopta el valor inferior más cercano (si n es menor al mínimo de la caja, usa el primer escalón)
+        n = inferiores.length > 0 ? inferiores[inferiores.length - 1] : escalonesRpm[0];
+    }
+    return n;
+}
+
+// ============================================================
 // CÁLCULOS DE FASE
 // ============================================================
 function calcularFaseCorte(
@@ -58,7 +83,7 @@ function calcularFaseCorte(
     const apReal = Math.min(apSafe, profFase);
     const Lrec = largoBase + dcSafe;
     const n_teorica = (vcFase * 1000) / (Math.PI * dcSafe);
-    const n = usaMaxRpm && n_teorica > maxRpm ? maxRpm : n_teorica;
+    const n = obtenerRpmMaquina(n_teorica, usaMaxRpm, maxRpm);
     const vf = n * fzSafe * znSafe;
     const nPasadasProf = Math.ceil(profFase / apReal);
     const nPasadasAncho = Math.ceil(anchoFase / aeFase);
@@ -97,7 +122,7 @@ function calcularFaseAbocardado(profFase, vcFase, fzFase, apFase, dcFase, znFase
     const fzSafe = Math.max(0.001, fzFase);
     const apSafe = Math.max(0.01, apFase);
     const n_teorica = (vcFase * 1000) / (Math.PI * dcSafe);
-    const n = usaMaxRpm && n_teorica > maxRpm ? maxRpm : n_teorica;
+    const n = obtenerRpmMaquina(n_teorica, usaMaxRpm, maxRpm);
     const vf = n * fzSafe * znSafe;
     const radialCoverage = Math.max(0.1, dAboc - dBroca);
     const radialStep = Math.max(0.1, dcSafe - dBroca);
@@ -136,27 +161,31 @@ function calcularFaseAbocardado(profFase, vcFase, fzFase, apFase, dcFase, znFase
 
 function calcularFaseMecha(diam, vc, fn, totalDepth, N, usaMaxRpm, maxRpm, kc, eta) {
     const n_teorica = (vc * 1000) / (Math.PI * diam);
-    const n = usaMaxRpm && n_teorica > maxRpm ? maxRpm : n_teorica;
+    const n = obtenerRpmMaquina(n_teorica, usaMaxRpm, maxRpm);
     const vf = n * fn;
+
+    // Si n se adaptó por caja de velocidades o tope, calculamos Vc real para la potencia de mecha
+    const vcReal = Math.abs(n - n_teorica) > 0.5 ? (Math.PI * diam * n) / 1000 : vc;
 
     // FORZAMOS LA CARRERA A (PROF/N + 5MM) * N
     const t = ((totalDepth / N + 5) * N) / vf;
     const profMostrar = totalDepth / N + 5;
 
-    const pcBruta = (diam * fn * vc * kc) / (240 * 1000);
+    const pcBruta = (diam * fn * vcReal * kc) / (240 * 1000);
     const pc = pcBruta / eta;
 
     return {
         diam,
         n,
         n_teorica,
+        vcReal,
         vf,
         t,
         pc,
         pcBruta,
         fn,
         totalDepth: profMostrar,
-        pcFormulaData: { d: diam, fn: fn, vc: vc, kc: kc },
+        pcFormulaData: { d: diam, fn: fn, vc: Number(vcReal.toFixed(2)), kc: kc },
     };
 }
 
@@ -172,6 +201,20 @@ function fRow(label, formulaHTML, substHTML, resultHTML, unit = "") {
     </div>`;
 }
 
+function htmlFilaRpm(vc, diam, n_teorica, n_final) {
+    const adaptada = Math.abs(n_final - n_teorica) > 0.5;
+    if (!adaptada) {
+        return fRow("n", `${frac("Vc · 1000", "π · Dc")}`, `${frac(vc + " · 1000", "π · " + diam)}`, fmt(n_final, 0), "rpm");
+    }
+    return fRow(
+        "n",
+        `${frac("Vc · 1000", "π · Dc")}`,
+        `${frac(vc + " · 1000", "π · " + diam)} = ${fmt(n_teorica, 0)} rpm → <b>Adoptado (Caja):</b>`,
+        fmt(n_final, 0),
+        "rpm",
+    );
+}
+
 function htmlFormulaFaseCorte(fase, tipo, datos) {
     if (!fase)
         return `<div class="text-[10px] text-slate-500 italic px-2 py-1">Fase no activa (sobrematerial ≥ profundidad)</div>`;
@@ -184,7 +227,7 @@ function htmlFormulaFaseCorte(fase, tipo, datos) {
     <div class="formula-box ${colorCls}">
         <div class="formula-section-title ${colorCls}">${label} · Dc=${datos.dc}mm · zn=${datos.zn} · Vc=${datos.vc} m/min · empañe=${datos.empane}${calidadTxt}</div>
         ${fRow("ae", `${fEmpane} · Dc`, `${fEmpane} · ${datos.dc}`, fmt(fase.aeFase), "mm")}
-        ${fRow("n", `${frac("Vc · 1000", "π · Dc")}`, `${frac(datos.vc + " · 1000", "π · " + datos.dc)}`, fmt(fase.n, 0), "rpm")}
+        ${htmlFilaRpm(datos.vc, datos.dc, fase.n_teorica, fase.n)}
         ${fRow("Vf", `n · fz · zn`, `${fmt(fase.n, 0)} · ${datos.fz} · ${datos.zn}`, fmt(fase.vf, 0), "mm/min")}
         ${fRow("L<sub>rec</sub>", `L + Dc`, `${datos.largoBase} + ${datos.dc}`, fmt(fase.Lrec, 1), "mm")}
         ${fRow("nPasadasProf", `⌈prof/ap⌉`, `⌈${fmt(datos.profFase)} / ${datos.ap}⌉`, fase.nPasadasProf)}
@@ -203,7 +246,7 @@ function htmlFormulaFaseAbocardado(fase, tipo, datos) {
     return `
     <div class="formula-box ${colorCls}">
         <div class="formula-section-title ${colorCls}">${label} · Dc=${datos.dc}mm · zn=${datos.zn} · Vc=${datos.vc} m/min${calidadTxt}</div>
-        ${fRow("n", `${frac("Vc · 1000", "π · Dc")}`, `${frac(datos.vc + " · 1000", "π · " + datos.dc)}`, fmt(fase.n, 0), "rpm")}
+        ${htmlFilaRpm(datos.vc, datos.dc, fase.n_teorica, fase.n)}
         ${fRow("Vf", `n · fz · zn`, `${fmt(fase.n, 0)} · ${datos.fz} · ${datos.zn}`, fmt(fase.vf, 0), "mm/min")}
         ${fRow("Anillo", `dAboc − dBroca`, `${datos.dAboc} − ${datos.dBroca}`, fmt(fase.radialCoverage), "mm")}
         ${fRow("Paso radial", `Dc − dBroca`, `${datos.dc} − ${datos.dBroca}`, fmt(fase.radialStep), "mm")}
@@ -219,14 +262,17 @@ function htmlMechaBlock(fase, tipo, num, total, vc, kc, eta, codigoDormer = "", 
     const cls = tipo === "previa" ? "previa" : "final";
     const tag = tipo === "previa" ? `MECHA PREVIA ${num}/${total - 1}` : `MECHA FINAL`;
     const infoCat = codigoDormer ? ` · ${codigoDormer}${letraDormer && letraDormer !== "-" ? ` (${vc}${letraDormer})` : ""}` : "";
+    const adaptada = Math.abs(fase.n - fase.n_teorica) > 0.5;
+    const vcParaPc = adaptada ? fmt(fase.vcReal, 2) : vc;
     return `
     <div class="mecha-block ${cls}">
         <div class="mecha-header text-slate-800">${tipo === "previa" ? "🟡" : "🟢"} ${tag} · Ø${fase.diam} mm${infoCat} · Vc=${vc} m/min · fn=${fase.fn} mm/rev</div>
-        ${fRow("n", `${frac("Vc · 1000", "π · D")}`, `${frac(vc + " · 1000", "π · " + fase.diam)}`, fmt(fase.n, 0), "rpm")}
+        ${htmlFilaRpm(vc, fase.diam, fase.n_teorica, fase.n)}
+        ${adaptada ? fRow("Vc real", `${frac("π · D · n", "1000")}`, `${frac("π · " + fase.diam + " · " + fmt(fase.n, 0), "1000")}`, fmt(fase.vcReal, 2), "m/min") : ""}
         ${fRow("Vf", `n · fn`, `${fmt(fase.n, 0)} · ${fase.fn}`, fmt(fase.vf, 0), "mm/min")}
         ${fRow("Prof. mec.", `L + 5`, `—`, fmt(fase.totalDepth, 2), "mm")}
         ${fRowMulti("t", `${frac("Prof. mec.", "Vf")}`, `${frac(fmt(fase.totalDepth, 2), fmt(fase.vf, 0))}`, fmt(fase.t, 3) + " min")}
-        ${fRowMulti("Pc bruta", `${frac("D · fn · Vc · kc", "240·10³")}`, `${frac(fase.diam + " · " + fase.fn + " · " + vc + " · " + kc, "240·10³")}`, fmt(fase.pcBruta) + " kW")}
+        ${fRowMulti("Pc bruta", `${frac("D · fn · Vc · kc", "240·10³")}`, `${frac(fase.diam + " · " + fase.fn + " · " + vcParaPc + " · " + kc, "240·10³")}`, fmt(fase.pcBruta) + " kW")}
         ${fRowMulti("Pc real", `${frac("Pc bruta", "η")}`, `${frac(fmt(fase.pcBruta), eta)}`, fmt(fase.pc) + " kW")}
     </div>`;
 }
@@ -235,7 +281,6 @@ function htmlMechaBlock(fase, tipo, num, total, vc, kc, eta, codigoDormer = "", 
 // CÁLCULO GLOBAL / REPORTE
 // ============================================================
 function ejecutarCalculoCompleto() {
-    // --- FUNCIONES AUXILIARES SEGURAS (evitan errores si falta un ID) ---
     const safeVal = (id, def = "") => {
         const el = document.getElementById(id);
         return el ? el.value : def;
@@ -264,6 +309,7 @@ function ejecutarCalculoCompleto() {
     const eta = usaEta ? safeNum("etaInput", 0.9) : 1.0;
     const usaMaxRpm = safeChk("chkMaxRpm");
     const maxRpm = safeNum("maxRpmInput", 4000);
+    const escalonesCaja = getListaCajaRpm();
     const dims = getDims();
     const { Lb, Wb, Hb, Lf, Wf, Hf } = dims;
     const grilla = construirGrilla3D(Lf, Wf, Hf);
@@ -307,7 +353,6 @@ function ejecutarCalculoCompleto() {
     const vcTerminacionPl = plVcTerminacionOverride || vcSegunEmpane(matTerm, plEmpaneTerminacion);
     const aeTerminacionPl = plAeTerminacionOverride || aeFactorT_pl * plDcTerminacion;
 
-    // USAMOS LAS DIMENSIONES DEL TOCHO (Lb, Wb, Hb) PARA EL PLANEADO
     const carasCheck = [
         { id: "pl_sup", ancho: Wb, L: Lb, esp: 0, nombre: "Cara Superior" },
         { id: "pl_inf", ancho: Wb, L: Lb, esp: 0, nombre: "Cara Inferior" },
@@ -733,7 +778,7 @@ function ejecutarCalculoCompleto() {
         const znPl2 = 6;
         const vcTerm2 = matTerm.vc_poco;
         const n_teorica = (vcTerm2 * 1000) / (Math.PI * plDcTerminacion);
-        const n2 = usaMaxRpm && n_teorica > maxRpm ? maxRpm : n_teorica;
+        const n2 = obtenerRpmMaquina(n_teorica, usaMaxRpm, maxRpm);
         const vf2 = n2 * 0.08 * znPl2;
         const aeTerm2 = 1.0,
             apTerm2 = 0.5;
@@ -748,7 +793,7 @@ function ejecutarCalculoCompleto() {
         reporteTerminacion = `<div class="border border-amber-300 rounded-lg p-3 bg-amber-50 mb-3 avoid-break">
             <div class="font-bold text-xs text-amber-900 border-b border-amber-200 pb-1 mb-2">ACABADO FINAL (Templado)</div>
             <div class="formula-box">
-                ${fRow("n", `${frac("Vc · 1000", "π · Dc")}`, `${frac(vcTerm2 + " · 1000", "π · " + plDcTerminacion)}`, fmt(n2, 0), "rpm")}
+                ${htmlFilaRpm(vcTerm2, plDcTerminacion, n_teorica, n2)}
                 ${fRow("Vf", `n · fz · zn`, `${fmt(n2, 0)} · 0.08 · ${znPl2}`, fmt(vf2, 0), "mm/min")}
                 ${fRowMulti("t", `${frac("L + W", "Vf")}`, `${frac(Lf + " + " + Wf, fmt(vf2, 0))}`, fmt(tT, 3) + " min")}
                 ${fRowMulti("Pc bruta", `${frac("ae · ap · Vf · kc", "60·10⁶")}`, `${frac(aeTerm2 + " · " + apTerm2 + " · " + fmt(vf2, 0) + " · " + matTerm.kc, "60·10⁶")}`, fmt(pcBrutaT) + " kW")}
@@ -760,7 +805,6 @@ function ejecutarCalculoCompleto() {
     const verificaPotencia = pMaxConsumida <= potMotor;
     calculosValidos = true;
 
-    // --- GENERACIÓN DE LA FÓRMULA DE POTENCIA DEL PROFESOR ---
     let htmlVerificacionPotencia = "";
     if (maxPcData) {
         if (maxPcData.tipo === "fresa") {
@@ -806,6 +850,7 @@ function ejecutarCalculoCompleto() {
                 <div><strong>• Prisma:</strong> ${Lf} × ${Wf} × ${Hf} mm</div>
                 <div><strong>• kc:</strong> ${matDesb.kc} N/mm² · mc=${matDesb.mc}</div>
                 <div><strong>• Estrategia:</strong> Desbaste + Terminación (Catálogos mixtos)</div>
+                ${escalonesCaja.length > 0 ? `<div class="col-span-2 text-indigo-900"><strong>• Caja de velocidades activa (RPM):</strong> ${escalonesCaja.join(", ")}</div>` : ""}
             </div>
         </div>
         ${usaTemple ? `<div class="p-3 mt-3 rounded-lg bg-amber-50 border-l-4 border-amber-500 text-xs text-amber-950"><strong>🔥 Temple:</strong> acabado usa ${matTerm.nombre} (kc=${matTerm.kc} N/mm²).</div>` : ""}

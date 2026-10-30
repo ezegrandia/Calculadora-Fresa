@@ -29,13 +29,26 @@ document.addEventListener(
 );
 
 // ============================================================
+// CONTROL DE LA CAJA DE VELOCIDADES (UI)
+// ============================================================
+function toggleCajaRpmUI() {
+    const chk = document.getElementById("chkCajaRpm");
+    const box = document.getElementById("boxCajaRpm");
+    if (!chk || !box) return;
+    if (chk.checked) {
+        box.classList.remove("hidden");
+    } else {
+        box.classList.add("hidden");
+    }
+}
+
+// ============================================================
 // CONTROL DE LA GUÍA LATERAL
 // ============================================================
 function toggleAyuda() {
     const panel = document.getElementById("ayudaPanel");
     const backdrop = document.getElementById("ayudaBackdrop");
 
-    // Si por algún motivo no existen en el HTML, no hace nada (protección)
     if (!panel || !backdrop) return;
 
     if (panel.classList.contains("translate-x-full")) {
@@ -46,13 +59,11 @@ function toggleAyuda() {
         backdrop.classList.add("hidden");
     }
 
-    // Redibujar el canvas después de que termine la animación para evitar bugs visuales
     setTimeout(() => {
         if (typeof actualizarVistaYAlertas === "function") actualizarVistaYAlertas();
     }, 350);
 }
 
-// Cerrar con la tecla Escape
 document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
         const panel = document.getElementById("ayudaPanel");
@@ -76,6 +87,7 @@ window.onload = () => {
     try {
         toggleEtaUI();
         toggleRpmUI();
+        toggleCajaRpmUI();
         toggleTempleUI();
         togglePlaneadoTerminacionUI();
         toggleInsertoPlaneado("Desbaste");
@@ -86,7 +98,6 @@ window.onload = () => {
     } catch (error) {
         console.error("Error en la carga inicial:", error);
     } finally {
-        // Retardo para asegurar que Tailwind dibuje todo antes de pintar el canvas
         setTimeout(() => {
             if (typeof actualizarVistaYAlertas === "function") actualizarVistaYAlertas();
         }, 150);

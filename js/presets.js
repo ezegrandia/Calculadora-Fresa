@@ -43,10 +43,12 @@ function resetearTodo() {
     setVal("etaInput", 0.9);
     setChk("chkMaxRpm", false);
     setVal("maxRpmInput", 4000);
+    setVal("cajaRpmInput", "22, 45, 90, 180, 360, 720, 1440");
     setChk("chkTemple", false);
 
     toggleEtaUI();
     toggleRpmUI();
+    if (typeof toggleCajaRpmUI === "function") toggleCajaRpmUI();
     toggleTempleUI();
 
     setVal("plDcDesbaste", 80);

@@ -132,6 +132,24 @@
                         <input type="number" id="maxRpmInput" value="4000" disabled
                             class="w-20 p-1.5 rounded border border-slate-300 font-mono font-bold text-center opacity-50" />
                     </div>
+                    <!-- NUEVO: CAJA DE VELOCIDADES (RPM ESCALONADAS) -->
+                    <div class="p-2 rounded-lg bg-indigo-50/70 border border-indigo-200 space-y-1.5 mt-2">
+                        <label class="flex items-center gap-2 cursor-pointer font-bold text-indigo-950">
+                            <input type="checkbox" id="chkCajaRpm" onchange="toggleCajaRpmUI()"
+                                class="rounded text-indigo-600" />
+                            <span>Caja de Velocidades (RPM escalonadas)</span>
+                        </label>
+                        <div id="boxCajaRpm" class="hidden pt-1">
+                            <label class="block text-[10px] font-semibold text-indigo-800 mb-0.5">RPM disponibles
+                                (separadas por coma):</label>
+                            <input type="text" id="cajaRpmInput" value="22, 45, 90, 180, 360, 720, 1440"
+                                placeholder="Ej: 22, 45, 90, 180, 360, 720, 1440"
+                                class="w-full p-1.5 rounded border border-indigo-300 font-mono text-xs bg-white text-indigo-950 font-bold" />
+                        </div>
+                    </div>
+                    <div id="matInfoBox"
+                        class="p-2 rounded-lg bg-slate-100 border border-slate-200 text-[10px] mono text-slate-700">
+                    </div>
                     <div id="matInfoBox"
                         class="p-2 rounded-lg bg-slate-100 border border-slate-200 text-[10px] mono text-slate-700">
                     </div>
@@ -455,9 +473,11 @@
                         muerde el material.
                         <ul class="list-disc pl-4 mt-1 space-y-1 text-slate-600">
                             <li><strong>Mucho (2/3 Dc):</strong> La fresa corta 2/3 de su diámetro. Es para
-                                <strong>Desbaste</strong> (sacar material rápido).</li>
+                                <strong>Desbaste</strong> (sacar material rápido).
+                            </li>
                             <li><strong>Poco (0.1 Dc):</strong> La fresa corta solo el 10%. Es para
-                                <strong>Terminación</strong> (dejar liso).</li>
+                                <strong>Terminación</strong> (dejar liso).
+                            </li>
                         </ul>
                         <div class="mt-2 p-2 bg-emerald-100 text-emerald-900 rounded">
                             💡 <strong>TIP:</strong> Si tu cara mide 70mm y querés forzar solo 2 pasadas en terminación,
